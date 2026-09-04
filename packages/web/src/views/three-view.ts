@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { ContainerType, LoadPlan } from '@loadwise/core';
+import { cargoWorldCenter } from './world-mapping.js';
 
 export type CameraView = 'iso' | 'door' | 'side' | 'top';
 
@@ -108,14 +109,11 @@ export function createThreeView(host: HTMLElement): ThreeView {
       }
     }
     for (const p of plan.placements) {
-      // world: x = width (shifted to center), y = height, z = depth (rear = −L/2, door = +L/2)
+      // world: x = width (centered), y = height, z = depth (rear = −L/2, door = +L/2)
       const g = new THREE.BoxGeometry(p.dim.dx / 100, p.dim.dz / 100, p.dim.dy / 100);
       const mesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: colors.get(p.skuId) }));
-      mesh.position.set(
-        p.pos.x / 100 - containerSize.W / 2,
-        p.pos.z / 100 + p.dim.dz / 200,
-        p.pos.y / 100 - containerSize.L / 2
-      );
+      const center = cargoWorldCenter(p, containerSize);
+      mesh.position.set(center.x, center.y, center.z);
       mesh.add(new THREE.LineSegments(
         new THREE.EdgesGeometry(g),
         new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.25 })

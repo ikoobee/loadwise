@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- 3D viewer: cargo meshes were offset by half their own width and depth (the
+  world-position mapping omitted the box's half extents on x/z), making cargo
+  poke through the container walls. Mapping is now a tested pure function
+  (`cargoWorldCenter`) with a containment regression test.
 - Stack-capacity check now rejects a candidate that overlaps any full bearer's
   footprint (previously only bearers hit by support samples were checked, which
   let corner-grazing boxes exceed `maxStackOn`). Found by the golden set on its
