@@ -32,6 +32,10 @@ matter in export logistics and outputs an auditable plan.
 - Standard container library: 20GP / 40GP / 40HQ / 45HQ / 13.5 m box truck
 - Center-of-gravity report and weight/volume-limit warnings (W/M awareness)
 - Deterministic output with engine version stamped on every plan
+- `@loadwise/web` — interactive viewer on top of the engine: solving in a Web
+  Worker, step-by-step 3D animation (orbit/zoom, camera presets), KPI panel
+  with weight meter and W/M advisories, loading-sequence list, door-view
+  loading guide canvas, light/dark theme
 
 ## Quick start
 
@@ -39,7 +43,15 @@ matter in export logistics and outputs an auditable plan.
 git clone git@github.com:ikoobee/loadwise.git
 cd loadwise
 pnpm install
-pnpm test        # 11 tests, all green
+pnpm dev         # web viewer at http://localhost:5173
+```
+
+In the viewer: pick a container, edit the cargo manifest (or load the demo),
+press 开始装载, then scrub the step slider / hit play to walk the loading order.
+
+```bash
+pnpm test        # core + web tests, all green
+pnpm build       # production build of the web viewer
 ```
 
 Use the engine from TypeScript:
@@ -86,7 +98,7 @@ validatePlan(plan, manifest); // [] — zero violations, always re-checkable
 
 ## Roadmap
 
-- Web viewer with step-by-step 3D animation and printable loading guide
+- Printable A4 loading-guide layout (bilingual) and mobile step pages
 - CLI (`loadwise plan manifest.xlsx -o plan.json`)
 - Self-hosted HTTP API + Docker image
 - Public benchmark set (`bench/`) with per-version result snapshots

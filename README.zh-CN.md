@@ -20,6 +20,7 @@ Excel 只能估，LoadWise 是算。算不准的装柜方案代价真实：纯�
 - 标准柜型库：20GP / 40GP / 40HQ / 45HQ / 13.5m 厢式车
 - 重心报告与重量/体积受限告警（W/M 重抛意识）
 - 确定性输出，每个方案带引擎版本号
+- `@loadwise/web` —— 引擎之上的交互式视图：Web Worker 内求解（UI 线程不卡顿）、分步 3D 装载动画（拖拽旋转/视角预设）、KPI 面板（载重 meter 与重抛告警）、装载序列列表、装载指导书主视图画布、深浅主题
 
 ## 快速开始
 
@@ -27,7 +28,14 @@ Excel 只能估，LoadWise 是算。算不准的装柜方案代价真实：纯�
 git clone git@github.com:ikoobee/loadwise.git
 cd loadwise
 pnpm install
-pnpm test        # 11 个测试全绿
+pnpm dev         # 打开 http://localhost:5173
+```
+
+视图里：选柜型 → 编辑货物清单（或载入示例）→ 开始装载 → 拖动步骤滑块 / 播放，逐步查看装载顺序。
+
+```bash
+pnpm test        # core + web 测试全绿
+pnpm build       # web 生产构建
 ```
 
 TypeScript 调用示例见 [README.md](README.md) 的 Quick Start（英文主文档维护完整示例）。
@@ -40,7 +48,7 @@ TypeScript 调用示例见 [README.md](README.md) 的 Quick Start（英文主文
 
 ## 路线图
 
-- Web 可视化：分步 3D 动画 + 可打印装载指导书
+- 可打印 A4 装载指导书排版（双语）与移动端步骤页
 - CLI（`loadwise plan manifest.xlsx -o plan.json`）
 - 自托管 HTTP API + Docker 镜像
 - 公开基准集（`bench/`）与逐版本结果快照

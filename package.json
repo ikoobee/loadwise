@@ -10,7 +10,9 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p packages/core"
+    "typecheck": "tsc --noEmit -p packages/core && pnpm --filter @loadwise/web exec tsc --noEmit",
+    "build": "pnpm --filter @loadwise/web build",
+    "dev": "pnpm --filter @loadwise/web dev"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",

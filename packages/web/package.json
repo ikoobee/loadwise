@@ -1,0 +1,25 @@
+{
+  "name": "@loadwise/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LoadWise web viewer — 3D loading simulation, KPI panel, step sequence and printable loading guide.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@loadwise/core": "workspace:*",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.160.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0",
+    "vitest": "^2.0.5"
+  }
+}
