@@ -64,34 +64,47 @@ function overlaps(a: Box, b: Box, clear: number): boolean {
 }
 
 /**
- * Bottom-support sampling on a 3×3 grid; the bearer directly below each sample
- * must have stack capacity left, and at least `ratio` of samples must be
- * supported. Top-face matching includes the clearance gap (a candidate at
- * `z = bearerTop + clearance` rests on that bearer).
+ * Bottom-support feasibility, in two independent checks:
+ * 1. Stack capacity — every box whose top face sits directly below the unit
+ *    (top + clearance == unit bottom) and overlaps its footprint must have
+ *    capacity left. This mirrors exactly how stackUsed is registered, so a
+ *    candidate that grazes a full bearer's corner is rejected here even when
+ *    no support sample lands on it.
+ * 2. Support ratio — a 3×3 grid of bottom-face samples; at least `ratio` of
+ *    them must rest on some box top (or the floor). Top-face matching includes
+ *    the clearance gap (a candidate at `z = bearerTop + clearance` rests on
+ *    that bearer).
  */
 function supportOk(unit: Box, placed: PlacedBox[], clear: number, ratio: number): boolean {
   if (unit.z < EPS) return true; // on the floor
+  for (const p of placed) {
+    if (
+      Math.abs(p.z + p.dz + clear - unit.z) < 1e-3 &&
+      p.x < unit.x + unit.dx && p.x + p.dx > unit.x &&
+      p.y < unit.y + unit.dy && p.y + p.dy > unit.y &&
+      p.stackUsed >= p.maxStackOn
+    ) {
+      return false;
+    }
+  }
   let supported = 0;
   const SAMPLES = 3;
   for (let i = 0; i < SAMPLES; i++) {
     for (let j = 0; j < SAMPLES; j++) {
       const px = unit.x + (unit.dx * (i + 0.5)) / SAMPLES;
       const py = unit.y + (unit.dy * (j + 0.5)) / SAMPLES;
-      let bearer: PlacedBox | null = null;
+      let supportedSample = false;
       for (const p of placed) {
         if (
           px > p.x + EPS && px < p.x + p.dx - EPS &&
           py > p.y + EPS && py < p.y + p.dy - EPS &&
-          Math.abs(p.z + p.dz + clear - unit.z) < 1e-3 &&
-          (bearer === null || p.z + p.dz > bearer.z + bearer.dz)
+          Math.abs(p.z + p.dz + clear - unit.z) < 1e-3
         ) {
-          bearer = p;
+          supportedSample = true;
+          break;
         }
       }
-      if (bearer !== null) {
-        if (bearer.stackUsed >= bearer.maxStackOn) return false;
-        supported++;
-      }
+      if (supportedSample) supported++;
     }
   }
   return supported / (SAMPLES * SAMPLES) >= ratio;

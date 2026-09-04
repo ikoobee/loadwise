@@ -1,0 +1,14 @@
+{
+  "id": "mixed-40hq",
+  "description": "Cross-border mixed manifest: five SKUs, mixed stack limits, upright constraints, 1 cm clearance (measured: 168/266 loaded, 54.3% util).",
+  "container": "40HQ",
+  "items": [
+    { "id": "chair", "name": "chair", "dim": { "l": 80, "w": 60, "h": 45 }, "weight": 12, "qty": 60, "maxStackOn": 5, "rotation": "any" },
+    { "id": "appliance", "name": "appliance", "dim": { "l": 55, "w": 45, "h": 40 }, "weight": 9, "qty": 80, "maxStackOn": 6, "rotation": "upright" },
+    { "id": "machine", "name": "machine", "dim": { "l": 120, "w": 100, "h": 95 }, "weight": 180, "qty": 6, "maxStackOn": 0, "rotation": "any" },
+    { "id": "softbag", "name": "softbag", "dim": { "l": 100, "w": 75, "h": 90 }, "weight": 25, "qty": 20, "maxStackOn": 2, "rotation": "upright" },
+    { "id": "led", "name": "led", "dim": { "l": 65, "w": 40, "h": 35 }, "weight": 7, "qty": 100, "maxStackOn": 8, "rotation": "any" }
+  ],
+  "options": { "clearance": 1 },
+  "expect": { "volumeUtil": [0.45, 0.65], "loaded": [150, 190] }
+}

@@ -36,6 +36,9 @@ matter in export logistics and outputs an auditable plan.
   Worker, step-by-step 3D animation (orbit/zoom, camera presets), KPI panel
   with weight meter and W/M advisories, loading-sequence list, door-view
   loading guide canvas, light/dark theme
+- `bench/` — golden set: six synthetic cases with quality ranges and committed
+  metric snapshots. Determinism turns the snapshot into a regression gate —
+  any solver behavior change fails CI until reviewed and re-snapshotted
 
 ## Quick start
 
@@ -101,7 +104,6 @@ validatePlan(plan, manifest); // [] — zero violations, always re-checkable
 - Printable A4 loading-guide layout (bilingual) and mobile step pages
 - CLI (`loadwise plan manifest.xlsx -o plan.json`)
 - Self-hosted HTTP API + Docker image
-- Public benchmark set (`bench/`) with per-version result snapshots
 
 See [CHANGELOG.md](CHANGELOG.md) for what landed in each version.
 

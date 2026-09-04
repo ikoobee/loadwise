@@ -21,6 +21,7 @@ Excel 只能估，LoadWise 是算。算不准的装柜方案代价真实：纯�
 - 重心报告与重量/体积受限告警（W/M 重抛意识）
 - 确定性输出，每个方案带引擎版本号
 - `@loadwise/web` —— 引擎之上的交互式视图：Web Worker 内求解（UI 线程不卡顿）、分步 3D 装载动画（拖拽旋转/视角预设）、KPI 面板（载重 meter 与重抛告警）、装载序列列表、装载指导书主视图画布、深浅主题
+- `bench/` —— 黄金集：六个合成用例带质量区间与已提交的指标快照。确定性让快照成为回归门——求解器任何行为变化都会先挂 CI，审查后才能重新快照
 
 ## 快速开始
 
@@ -51,7 +52,6 @@ TypeScript 调用示例见 [README.md](README.md) 的 Quick Start（英文主文
 - 可打印 A4 装载指导书排版（双语）与移动端步骤页
 - CLI（`loadwise plan manifest.xlsx -o plan.json`）
 - 自托管 HTTP API + Docker 镜像
-- 公开基准集（`bench/`）与逐版本结果快照
 
 各版本变更见 [CHANGELOG.md](CHANGELOG.md)。
 

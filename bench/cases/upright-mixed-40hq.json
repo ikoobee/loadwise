@@ -1,0 +1,11 @@
+{
+  "id": "upright-mixed-40hq",
+  "description": "Upright-constrained SKUs with 1 cm clearance — projection-lift extreme points must keep stacking alive (measured: 160/160 loaded, full manifest).",
+  "container": "40HQ",
+  "items": [
+    { "id": "A", "name": "A", "dim": { "l": 90, "w": 70, "h": 60 }, "weight": 30, "qty": 40, "maxStackOn": 3, "rotation": "any" },
+    { "id": "B", "name": "B", "dim": { "l": 50, "w": 40, "h": 35 }, "weight": 8, "qty": 120, "maxStackOn": 8, "rotation": "any" }
+  ],
+  "options": { "clearance": 1 },
+  "expect": { "loaded": [155, 160] }
+}

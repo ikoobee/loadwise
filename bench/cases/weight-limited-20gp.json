@@ -1,0 +1,10 @@
+{
+  "id": "weight-limited-20gp",
+  "description": "Payload-limited: 12 t steel units — the second unit must already exceed the 21.7 t limit (measured: 1 loaded, 4 unplaced, weight-limit reason).",
+  "container": "20GP",
+  "items": [
+    { "id": "steel", "name": "steel", "dim": { "l": 100, "w": 100, "h": 100 }, "weight": 12000, "qty": 5, "maxStackOn": 0, "rotation": "any" }
+  ],
+  "options": { "clearance": 0 },
+  "expect": { "loaded": [1, 1] }
+}

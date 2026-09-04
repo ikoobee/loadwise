@@ -1,0 +1,10 @@
+{
+  "id": "clearance-2-20gp",
+  "description": "Inter-cargo clearance of 2 cm with 1 m3 crates — support checking must compensate the gap or stacking collapses (measured: 20/30 loaded in two layers).",
+  "container": "20GP",
+  "items": [
+    { "id": "x", "name": "x", "dim": { "l": 100, "w": 100, "h": 100 }, "weight": 50, "qty": 30, "maxStackOn": 3, "rotation": "any" }
+  ],
+  "options": { "clearance": 2 },
+  "expect": { "loaded": [18, 24] }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "heavy-no-stack-20gp",
+  "description": "One unstackable heavy base plus 300 small units — the base must carry nothing on top (measured: 301/301 loaded).",
+  "container": "20GP",
+  "items": [
+    { "id": "heavy", "name": "heavy", "dim": { "l": 200, "w": 200, "h": 50 }, "weight": 500, "qty": 1, "maxStackOn": 0, "rotation": "fixed" },
+    { "id": "light", "name": "light", "dim": { "l": 30, "w": 30, "h": 30 }, "weight": 1, "qty": 300, "maxStackOn": 9, "rotation": "any" }
+  ],
+  "options": { "clearance": 0 },
+  "expect": { "loaded": [300, 301] }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "homogeneous-40gp",
+  "description": "Uniform 60x40x40 cartons with abundant supply — measures raw packing density of the L1 heuristic (measured: 550 loaded, 78.1% util).",
+  "container": "40GP",
+  "items": [
+    { "id": "carton", "name": "carton", "dim": { "l": 60, "w": 40, "h": 40 }, "weight": 8, "qty": 700, "maxStackOn": 10, "rotation": "any" }
+  ],
+  "options": { "clearance": 0 },
+  "expect": { "volumeUtil": [0.75, 0.9], "loaded": [500, 620] }
+}
