@@ -101,3 +101,9 @@ are licensed under the project's MIT license (inbound = outbound).
 ## License
 
 [MIT](LICENSE) © 2026 Ethan (ikoobee)
+
+## ☕ Sponsor
+
+If LoadWise saves you a container or two, consider supporting the project:
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsors-ea4aaa.svg)](https://github.com/sponsors/ikoobee)

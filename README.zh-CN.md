@@ -54,3 +54,13 @@ TypeScript 调用示例见 [README.md](README.md) 的 Quick Start（英文主文
 ## 许可证
 
 [MIT](LICENSE) © 2026 Ethan (ikoobee)
+
+## ☕ Sponsor / 赞赏
+
+如果这个项目帮到了你，欢迎请作者喝杯咖啡 ☕
+
+<details>
+<summary>赞赏码 / Donation</summary>
+<img src="docs/donate/donate-wechat-labeled.png" width="220" alt="微信赞赏码" />
+<img src="docs/donate/donate-alipay-labeled.png" width="220" alt="支付宝收钱码" />
+</details>
