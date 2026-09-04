@@ -114,6 +114,7 @@ export function createThreeView(host: HTMLElement): ThreeView {
       const mesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: colors.get(p.skuId) }));
       const center = cargoWorldCenter(p, containerSize);
       mesh.position.set(center.x, center.y, center.z);
+      mesh.userData.targetZ = center.z;
       mesh.add(new THREE.LineSegments(
         new THREE.EdgesGeometry(g),
         new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.25 })
@@ -125,8 +126,14 @@ export function createThreeView(host: HTMLElement): ThreeView {
     applyStep();
   }
 
+  /** Slide-in animation: newly visible boxes glide in from outside the door. */
+  const SLIDE_MS = 380;
   function applyStep() {
-    boxes.forEach((m, i) => { m.visible = i < curVisible; });
+    boxes.forEach((m, i) => {
+      const visible = i < curVisible;
+      if (visible && !m.visible) m.userData.entryAt = performance.now();
+      m.visible = visible;
+    });
   }
   let curVisible = 0;
 
@@ -144,6 +151,17 @@ export function createThreeView(host: HTMLElement): ThreeView {
   let raf = 0;
   (function animate() {
     raf = requestAnimationFrame(animate);
+    const now = performance.now();
+    for (const m of boxes) {
+      const entryAt = m.userData.entryAt as number | undefined;
+      if (entryAt === undefined) continue;
+      const t = Math.min(1, (now - entryAt) / SLIDE_MS);
+      const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const fromZ = containerSize.L / 2 + 1.2; // staged just outside the door
+      const targetZ = m.userData.targetZ as number;
+      m.position.z = fromZ + (targetZ - fromZ) * ease;
+      if (t >= 1) m.userData.entryAt = undefined;
+    }
     controls.update();
     renderer.render(scene, camera);
   })();

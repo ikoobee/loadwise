@@ -1,5 +1,5 @@
 import type { LoadPlan } from '@loadwise/core';
-import { drawGuide, skuColorMap } from './guide.js';
+import { drawGuide, drawTopGuide, skuColorMap } from './guide.js';
 
 const SKU_SLOTS = ['series-1', 'series-2', 'series-3', 'series-4', 'series-5', 'series-6', 'series-7', 'series-8'];
 
@@ -15,6 +15,7 @@ export function bindSteps(
   const label = document.getElementById('stepLabel')!;
   const slider = document.getElementById('stepSlider') as HTMLInputElement;
   const canvas = document.getElementById('guideCanvas') as HTMLCanvasElement;
+  const topCanvas = document.getElementById('guideTopCanvas') as HTMLCanvasElement | null;
   let colors = new Map<string, string>();
   let lastPlan: LoadPlan | null = null;
 
@@ -30,6 +31,7 @@ export function bindSteps(
       lastPlan = null;
       const ctx = canvas.getContext('2d');
       ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      topCanvas?.getContext('2d')?.clearRect(0, 0, topCanvas.width, topCanvas.height);
       return;
     }
     if (plan !== lastPlan) {
@@ -47,6 +49,7 @@ export function bindSteps(
     }
     markCurrent(curStep);
     drawGuide(canvas, plan, curStep, colors);
+    if (topCanvas) drawTopGuide(topCanvas, plan, curStep, colors);
   }
 
   function markCurrent(curStep: number) {

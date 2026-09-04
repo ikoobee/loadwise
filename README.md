@@ -27,6 +27,12 @@ matter in export logistics and outputs an auditable plan.
 - Hard constraints: total weight, per-item stack limits (`maxStackOn`),
   rotation modes (`any` / `upright` / `fixed`), inter-cargo clearance,
   ≥ 75 % bottom-support requirement
+- Physically executable loading order: steps are renumbered by constrained
+  topological sort — bearers always precede what rests on them, and no
+  door-side cargo ever blocks a later push-in (verified by `validatePlan`'s
+  `blocked-path` check). Two walk strategies: `loadingOrder: 'row'`
+  (rear row first, bottom-to-top — manual/forklift flow) or `'layer'`
+  (pallet/forklift flow)
 - `validatePlan` — standalone plan validator reusing the same invariants
   (audit any plan, including hand-edited or third-party ones)
 - Standard container library: 20GP / 40GP / 40HQ / 45HQ / 13.5 m box truck

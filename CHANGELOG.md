@@ -22,6 +22,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   door-view loading guide canvas (depth-faded projection, current step outlined);
   light/dark theme.
 
+### Changed
+
+- Loading order is now a first-class, physically executable sequence: steps are
+  renumbered via constrained topological sort (support edges — bearers load
+  before what rests on them; blocking edges — door-side cargo never blocks a
+  later push-in). Fixes mid-air boxes in the step animation where an overhanging
+  upper box appeared before its bearer.
+- `SolveOptions.loadingOrder: 'layer' | 'row'` — the solver can walk the
+  container layer-by-layer (pallet/forklift flow) or row-by-row
+  (manual/forklift flow, rear row first, bottom-to-top within a row). On the
+  mixed 40HQ benchmark the row strategy loads 219 vs 168 units (60.5% vs
+  54.2% volume utilization) with a near-centered CoG.
+- `validatePlan` gains a `blocked-path` check: any plan (including hand-edited
+  or third-party ones) is verified for door-side insertion feasibility.
+- Web viewer: loading-strategy selector, door-side slide-in animation for newly
+  placed cargo, and a top-view guide canvas showing the row structure.
+
 ### Fixed
 
 - 3D viewer: cargo meshes were offset by half their own width and depth (the

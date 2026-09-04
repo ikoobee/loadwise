@@ -9,6 +9,7 @@ import {
   validatePlan,
   type CargoItem,
   type LoadPlan,
+  type LoadingOrder,
 } from '../src/index.js';
 
 /**
@@ -30,7 +31,7 @@ interface BenchCase {
   description: string;
   container: string;
   items: CargoItem[];
-  options?: { clearance?: number };
+  options?: { clearance?: number; loadingOrder?: LoadingOrder };
   expect: { volumeUtil?: [number, number]; loaded?: [number, number] };
 }
 

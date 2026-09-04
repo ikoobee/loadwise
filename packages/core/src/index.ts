@@ -4,6 +4,7 @@ export type {
   Dim3,
   LoadPlan,
   LoadPlanStats,
+  LoadingOrder,
   Placement,
   RotationMode,
   SolveOptions,

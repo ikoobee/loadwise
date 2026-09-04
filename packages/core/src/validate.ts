@@ -7,6 +7,7 @@ export interface ValidationIssue {
     | 'weight-exceeded'
     | 'unsupported'
     | 'stack-exceeded'
+    | 'blocked-path'
     | 'step-sequence';
   message: string;
   step?: number;
@@ -109,6 +110,31 @@ export function validatePlan(plan: LoadPlan, items: CargoItem[]): ValidationIssu
     if (placements[i]!.step !== i + 1) {
       issues.push({ code: 'step-sequence', message: `steps must be 1..n in order, got #${placements[i]!.step} at index ${i}` });
       break;
+    }
+  }
+
+  // Door-side insertion feasibility: cargo loaded later (higher step) must not
+  // have an earlier cargo sitting door-wards of it with an overlapping width ×
+  // height footprint — that earlier box would block the straight push-in path
+  // from the door. Tolerance absorbs the inter-cargo clearance gap.
+  const pathTol = options.clearance + 1e-3;
+  for (let s = 0; s < placements.length; s++) {
+    const p = placements[s]!;
+    const bp = box(p);
+    for (let t = 0; t < s; t++) {
+      const q = placements[t]!;
+      const bq = box(q);
+      const footprintOverlap =
+        bp.x < bq.x + bq.dx && bp.x + bp.dx > bq.x &&
+        bp.z < bq.z + bq.dz && bp.z + bp.dz > bq.z;
+      const blocksDoorSide = bq.y + bq.dy > bp.y + bp.dy + pathTol;
+      if (footprintOverlap && blocksDoorSide) {
+        issues.push({
+          code: 'blocked-path',
+          step: p.step,
+          message: `unit #${p.step} (${p.skuId}) cannot be pushed in from the door: unit #${q.step} (${q.skuId}) blocks its path`,
+        });
+      }
     }
   }
 

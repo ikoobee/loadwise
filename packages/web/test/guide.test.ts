@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTAINERS } from '@loadwise/core';
-import { doorViewTransform, projectDoorView, GUIDE_PAD } from '../src/views/guide.js';
+import { doorViewTransform, projectDoorView, topViewTransform, projectTopView, GUIDE_PAD } from '../src/views/guide.js';
 
 const C20 = CONTAINERS['20GP']!; // 589 × 235 × 239
 
@@ -32,5 +32,26 @@ describe('doorViewTransform', () => {
     const r = projectDoorView(p, t);
     expect(r.x).toBeCloseTo(t.ox, 6);
     expect(r.w).toBeCloseTo(50 * t.s, 6);
+  });
+});
+
+describe('topViewTransform / projectTopView', () => {
+  it('maps the rear-left corner to the top-left of the frame, depth toward the door', () => {
+    const t = topViewTransform(C20, 640, 300);
+    // width fits at (640-62)/235 = 2.459; depth fits at (300-60)/589 = 0.4075 → scale by depth
+    expect(t.s).toBeCloseTo((300 - GUIDE_PAD.t - GUIDE_PAD.b) / 589, 6);
+    const rearLeft = { pos: { x: 0, y: 0, z: 0 }, dim: { dx: 50, dy: 100, dz: 50 }, skuId: 'a', step: 1 };
+    const r = projectTopView(rearLeft, t);
+    expect(r.x).toBeCloseTo(t.ox, 6);
+    expect(r.y).toBeCloseTo(t.oy, 6);
+    expect(r.w).toBeCloseTo(50 * t.s, 6);
+    expect(r.h).toBeCloseTo(100 * t.s, 6);
+  });
+
+  it('is independent of height (footprint projection only)', () => {
+    const t = topViewTransform(C20, 640, 300);
+    const low = { pos: { x: 10, y: 20, z: 0 }, dim: { dx: 50, dy: 60, dz: 10 }, skuId: 'a', step: 1 };
+    const high = { ...low, pos: { x: 10, y: 20, z: 200 } };
+    expect(projectTopView(high, t)).toEqual(projectTopView(low, t));
   });
 });

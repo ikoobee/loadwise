@@ -1,4 +1,4 @@
-import type { CargoItem, ContainerType, LoadPlan } from '@loadwise/core';
+import type { CargoItem, ContainerType, LoadPlan, LoadingOrder } from '@loadwise/core';
 
 /**
  * Single source of truth. Unidirectional flow:
@@ -9,6 +9,7 @@ export interface AppState {
   items: CargoItem[];
   container: ContainerType;
   clearance: number;
+  loadingOrder: LoadingOrder;
   plan: LoadPlan | null;
   curStep: number;
   solving: boolean;

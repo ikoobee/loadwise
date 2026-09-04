@@ -20,6 +20,7 @@ const store = createStore({
   items: structuredClone(DEMO_ITEMS),
   container: CONTAINERS['40HQ']!,
   clearance: 1,
+  loadingOrder: 'row',
   plan: null,
   curStep: 0,
   solving: false,
@@ -57,7 +58,12 @@ function requestSolve() {
   if (items.length === 0) { toast('请先添加有效货物'); return; }
   workerBusy = true;
   store.set({ solving: true });
-  worker.postMessage({ container: store.get().container, items, clearance: store.get().clearance });
+  worker.postMessage({
+    container: store.get().container,
+    items,
+    clearance: store.get().clearance,
+    loadingOrder: store.get().loadingOrder,
+  });
 }
 
 /* ---- 3D viewport ---- */
@@ -195,6 +201,10 @@ $('cH').addEventListener('change', () => { store.set({ container: currentContain
 $('cM').addEventListener('change', () => { store.set({ container: currentContainerFromUI() }); refreshContainerInfo(); });
 $('clearance').addEventListener('change', () => {
   store.set({ clearance: Math.max(0, +$<HTMLInputElement>('clearance').value || 0) });
+});
+$('loadingOrder').addEventListener('change', () => {
+  const v = $<HTMLSelectElement>('loadingOrder').value;
+  store.set({ loadingOrder: v === 'layer' ? 'layer' : 'row' });
 });
 $('loadDemo').addEventListener('click', () => {
   store.set({ items: structuredClone(DEMO_ITEMS) });

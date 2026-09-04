@@ -144,6 +144,70 @@ describe('density helpers', () => {
   });
 });
 
+describe('solveL1 — loading order', () => {
+  const manifest: CargoItem[] = [
+    item({ id: 'A', dim: { l: 120, w: 100, h: 95 }, weight: 180, qty: 6, maxStackOn: 0 }),
+    item({ id: 'B', dim: { l: 80, w: 60, h: 45 }, weight: 12, qty: 60, maxStackOn: 5 }),
+    item({ id: 'C', dim: { l: 55, w: 45, h: 40 }, weight: 9, qty: 80, maxStackOn: 6, rotation: 'upright' }),
+  ];
+
+  it('orders steps so bearers exist before their load and no path is blocked', () => {
+    for (const loadingOrder of ['layer', 'row'] as const) {
+      const plan = solveL1(C40HQ, manifest, { clearance: 1, loadingOrder });
+      const seen = new Set<number>();
+      for (const p of plan.placements) {
+        if (p.pos.z > 1e-3) {
+          // every direct bearer (top face == p's bottom, x/y overlap) must already be in
+          const hasBearer = plan.placements.some((q) =>
+            q.step < p.step &&
+            Math.abs(q.pos.z + q.dim.dz + 1 - p.pos.z) < 1e-3 &&
+            q.pos.x < p.pos.x + p.dim.dx && q.pos.x + q.dim.dx > p.pos.x &&
+            q.pos.y < p.pos.y + p.dim.dy && q.pos.y + q.dim.dy > p.pos.y
+          );
+          expect(hasBearer).toBe(true);
+        }
+        seen.add(p.step);
+      }
+      expect(validatePlan(plan, manifest)).toEqual([]);
+    }
+  });
+
+  it('row strategy also produces a valid plan (and records the strategy)', () => {
+    const plan = solveL1(C40HQ, manifest, { clearance: 1, loadingOrder: 'row' });
+    expect(plan.options.loadingOrder).toBe('row');
+    expect(plan.stats.loaded).toBeGreaterThan(0);
+    expect(validatePlan(plan, manifest)).toEqual([]);
+  });
+});
+
+describe('validatePlan — blocked path', () => {
+  it('flags a later unit whose push-in path is blocked by an earlier one', () => {
+    const items: CargoItem[] = [
+      item({ id: 'x', dim: { l: 60, w: 60, h: 60 }, weight: 10, qty: 2 }),
+    ];
+    const plan = solveL1(C20, items);
+    expect(plan.placements).toHaveLength(2);
+    // Tamper: front box (y=100) loaded first, rear box (y=0) loaded second —
+    // the rear box cannot be pushed in past the front one.
+    const tampered = structuredClone(plan);
+    const [a, b] = tampered.placements;
+    tampered.placements = [
+      { ...a!, pos: { x: 0, y: 100, z: 0 }, step: 1 },
+      { ...b!, pos: { x: 0, y: 0, z: 0 }, step: 2 },
+    ];
+    const issues = validatePlan(tampered, items);
+    expect(issues.map((i) => i.code)).toContain('blocked-path');
+    // sanity: the legal order (rear first) passes
+    const legal = structuredClone(plan);
+    const [c, d] = legal.placements;
+    legal.placements = [
+      { ...c!, pos: { x: 0, y: 0, z: 0 }, step: 1 },
+      { ...d!, pos: { x: 0, y: 100, z: 0 }, step: 2 },
+    ];
+    expect(validatePlan(legal, items).filter((i) => i.code === 'blocked-path')).toEqual([]);
+  });
+});
+
 describe('engine metadata', () => {
   it('stamps schema and engine version; version tracks package.json', () => {
     const plan = solveL1(C20, [item({ dim: { l: 60, w: 40, h: 40 }, weight: 8, qty: 3 })]);

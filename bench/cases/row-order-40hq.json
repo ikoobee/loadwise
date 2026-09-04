@@ -1,0 +1,14 @@
+{
+  "id": "row-order-40hq",
+  "description": "Same cross-border manifest as mixed-40hq but loaded row-by-row (rear row first, bottom-to-top within a row) — the manual/forklift flow. Steps must stay rear-to-door unblocked regardless of strategy.",
+  "container": "40HQ",
+  "items": [
+    { "id": "chair", "name": "chair", "dim": { "l": 80, "w": 60, "h": 45 }, "weight": 12, "qty": 60, "maxStackOn": 5, "rotation": "any" },
+    { "id": "appliance", "name": "appliance", "dim": { "l": 55, "w": 45, "h": 40 }, "weight": 9, "qty": 80, "maxStackOn": 6, "rotation": "upright" },
+    { "id": "machine", "name": "machine", "dim": { "l": 120, "w": 100, "h": 95 }, "weight": 180, "qty": 6, "maxStackOn": 0, "rotation": "any" },
+    { "id": "softbag", "name": "softbag", "dim": { "l": 100, "w": 75, "h": 90 }, "weight": 25, "qty": 20, "maxStackOn": 2, "rotation": "upright" },
+    { "id": "led", "name": "led", "dim": { "l": 65, "w": 40, "h": 35 }, "weight": 7, "qty": 100, "maxStackOn": 8, "rotation": "any" }
+  ],
+  "options": { "clearance": 1, "loadingOrder": "row" },
+  "expect": { "volumeUtil": [0.55, 0.68], "loaded": [200, 235] }
+}

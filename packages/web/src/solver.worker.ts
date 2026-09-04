@@ -1,9 +1,10 @@
-import { solveL1, type CargoItem, type ContainerType, type LoadPlan } from '@loadwise/core';
+import { solveL1, type CargoItem, type ContainerType, type LoadPlan, type LoadingOrder } from '@loadwise/core';
 
 export interface SolveRequest {
   container: ContainerType;
   items: CargoItem[];
   clearance: number;
+  loadingOrder: LoadingOrder;
 }
 
 export type SolveResponse =
@@ -11,9 +12,9 @@ export type SolveResponse =
   | { ok: false; error: string };
 
 self.addEventListener('message', (e: MessageEvent<SolveRequest>) => {
-  const { container, items, clearance } = e.data;
+  const { container, items, clearance, loadingOrder } = e.data;
   try {
-    const plan = solveL1(container, items, { clearance });
+    const plan = solveL1(container, items, { clearance, loadingOrder });
     const res: SolveResponse = { ok: true, plan };
     self.postMessage(res);
   } catch (err) {

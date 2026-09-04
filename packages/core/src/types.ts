@@ -54,11 +54,22 @@ export interface Placement {
   dim: { dx: number; dy: number; dz: number };
 }
 
+/**
+ * Loading-order strategy — how the solver walks the container:
+ * - 'layer': lowest level first, rear→door within a level (pallet/forklift flow)
+ * - 'row': rear-most row first, bottom→top within a row (manual + forklift flow)
+ * Either way, steps are renumbered rear→door at the end (see solver) so the
+ * sequence is always physically insertable from the door side without blocking.
+ */
+export type LoadingOrder = 'layer' | 'row';
+
 export interface SolveOptions {
   /** Required surface gap between cargo units (and to walls along y growth), cm. Default 0. */
   clearance?: number;
   /** Minimum ratio of bottom face that must be supported. Default 0.75. */
   supportRatio?: number;
+  /** Loading-order strategy. Default 'layer'. */
+  loadingOrder?: LoadingOrder;
 }
 
 export interface LoadPlanStats {

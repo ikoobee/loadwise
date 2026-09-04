@@ -7,6 +7,13 @@ import type {
   UnplacedGroup,
 } from './types.js';
 
+/** Point-scan order per loading strategy — determinism anchor. */
+function pointComparator(order: 'layer' | 'row') {
+  return order === 'row'
+    ? (p: Point, q: Point) => p.y - q.y || p.z - q.z || p.x - q.x || 0 // row: rear→door, bottom→top
+    : (p: Point, q: Point) => p.z - q.z || p.y - q.y || p.x - q.x || 0; // layer: bottom first
+}
+
 export const ENGINE_VERSION = '0.1.0';
 export const SOLVER_ID = 'l1-ep-ffd';
 
@@ -160,6 +167,92 @@ function buildWarnings(plan: Omit<LoadPlan, 'warnings'>, cogY: number): string[]
 }
 
 /**
+ * Constrained step renumbering (Kahn's algorithm).
+ * An edge u → v means "u must be loaded before v":
+ *  - support edge: v rests on u (u top + clearance == v bottom, x/y footprints
+ *    overlap) — v cannot be placed until its bearer exists (fixes mid-air boxes);
+ *  - blocking edge: u sits door-wards of v with overlapping width×height
+ *    footprint — u loaded first would block v's push-in, so v must precede u
+ *    (edge v → u).
+ * Deterministic: among ready nodes always pick the (y, z, x, step)-smallest,
+ * so the sequence reads rear→door / bottom→top wherever the DAG allows.
+ */
+function renumberSteps(placed: PlacedBox[], clear: number): PlacedBox[] {
+  const n = placed.length;
+  if (n <= 1) return [...placed];
+
+  const preds: number[][] = Array.from({ length: n }, () => []);
+  const succs: number[][] = Array.from({ length: n }, () => []);
+  const indeg = new Array<number>(n).fill(0);
+
+  const addEdge = (u: number, v: number) => {
+    // u must load before v
+    if (u === v) return;
+    succs[u]!.push(v);
+    preds[v]!.push(u);
+    indeg[v]!++;
+  };
+
+  const xyOverlap = (a: PlacedBox, b: PlacedBox) =>
+    a.x < b.x + b.dx && a.x + a.dx > b.x &&
+    a.y < b.y + b.dy && a.y + a.dy > b.y;
+  const xzOverlap = (a: PlacedBox, b: PlacedBox) =>
+    a.x < b.x + b.dx && a.x + a.dx > b.x &&
+    a.z < b.z + b.dz && a.z + a.dz > b.z;
+
+  for (let v = 0; v < n; v++) {
+    const pv = placed[v]!;
+    for (let u = 0; u < n; u++) {
+      if (u === v) continue;
+      const pu = placed[u]!;
+      // support: v rests on u → u before v
+      if (Math.abs(pu.z + pu.dz + clear - pv.z) < 1e-3 && xyOverlap(pu, pv)) {
+        addEdge(u, v);
+      }
+      // blocking: u is door-wards of v with overlapping x/z footprint.
+      // If u loaded first it would block v's push-in → v must load before u.
+      else if (
+        pu.y + pu.dy > pv.y + pv.dy + clear + 1e-3 &&
+        xzOverlap(pu, pv)
+      ) {
+        addEdge(v, u);
+      }
+    }
+  }
+
+  const ready: number[] = [];
+  for (let i = 0; i < n; i++) if (indeg[i] === 0) ready.push(i);
+  const result: PlacedBox[] = [];
+  const done = new Array<boolean>(n).fill(false);
+
+  const better = (a: number, b: number) => {
+    const pa = placed[a]!, pb = placed[b]!;
+    return pa.y - pb.y || pa.z - pb.z || pa.x - pb.x || pa.step - pb.step;
+  };
+
+  while (ready.length > 0) {
+    // pick the (y, z, x, step)-smallest ready node — deterministic
+    let best = 0;
+    for (let k = 1; k < ready.length; k++) if (better(ready[k]!, ready[best]!) < 0) best = k;
+    const node = ready.splice(best, 1)[0]!;
+    done[node] = true;
+    result.push(placed[node]!);
+    for (const s of succs[node]!) {
+      if (--indeg[s]! === 0) ready.push(s);
+    }
+  }
+  // cycle leftovers: append in (y, z, x) order; validator gates any violation
+  if (result.length < n) {
+    const rest = placed
+      .map((p, i) => ({ p, i }))
+      .filter(({ i }) => !done[i])
+      .sort((a, b) => a.p.y - b.p.y || a.p.z - b.p.z || a.p.x - b.p.x || a.p.step - b.p.step);
+    for (const { p } of rest) result.push(p);
+  }
+  return result;
+}
+
+/**
  * L1 solver: Extreme-Point First-Fit Decreasing.
  *
  * Greedy and deterministic: units sorted by volume ↓ / weight ↓ / input order ↑,
@@ -173,6 +266,8 @@ export function solveL1(
 ): LoadPlan {
   const clearance = options.clearance ?? 0;
   const supportRatio = options.supportRatio ?? DEFAULT_SUPPORT_RATIO;
+  const loadingOrder = options.loadingOrder ?? 'layer';
+  const byPoint = pointComparator(loadingOrder);
   const W = container.innerDim.w;
   const L = container.innerDim.l;
   const H = container.innerDim.h;
@@ -199,7 +294,7 @@ export function solveL1(
 
   for (const u of units) {
     let done = false;
-    const sorted = [...points].sort((p, q) => p.z - q.z || p.y - q.y || p.x - q.x || 0);
+    const sorted = [...points].sort(byPoint);
     for (const pt of sorted) {
       for (const dims of orientations(u)) {
         const [dx, dy, dz] = dims;
@@ -256,6 +351,18 @@ export function solveL1(
     if (!done) unplacedUnits.push(u);
   }
 
+  // Renumber steps into a physically executable loading order via constrained
+  // topological sort. Two kinds of edges (both mirror validatePlan's checks):
+  //   support  — a box must be installed before anything resting on it;
+  //   blocking — a box door-wards of another with overlapping width×height
+  //              footprint must go in later (it would block the push-in path).
+  // Ties break (y, z, x, step) so the sequence still reads rear→door,
+  // bottom→top wherever the DAG allows it. If a cycle remains (geometrically
+  // conflicting overhangs), leftovers append in (y, z, x) order and the
+  // validator's blocked-path check is the final gate.
+  const ordered = renumberSteps(placed, clearance);
+  ordered.forEach((p, i) => { p.step = i + 1; });
+
   // Aggregate unplaced units by SKU.
   const unplacedMap = new Map<string, UnplacedGroup>();
   for (const u of unplacedUnits) {
@@ -284,8 +391,8 @@ export function solveL1(
     engineVersion: ENGINE_VERSION,
     solverId: SOLVER_ID,
     container,
-    options: { clearance, supportRatio },
-    placements: placed.map<Placement>((p) => ({
+    options: { clearance, supportRatio, loadingOrder },
+    placements: ordered.map<Placement>((p) => ({
       skuId: items[p.skuIdx]!.id,
       step: p.step,
       pos: { x: p.x, y: p.y, z: p.z },
